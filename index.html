@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Webtoons Populares</title>
+
+
+  <style>
+    h1 {
+      text-align: center;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    ul {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    .card {
+      width: min(15rem, 100%);
+      background: blueviolet;
+      padding: 1rem;
+      flex-grow: 1;
+      border-radius: .5rem;
+    }
+
+    img {
+      max-width: 100%;
+      background: white;
+      border-radius: .1rem;
+
+    }
+  </style>
+
+
+  <style>
+    header {
+      --accent: #9e753d;
+      display: flex;
+    }
+
+    button {
+      border-color: transparent #9e753d;
+      position: relative;
+
+      height: 3rem;
+      padding-inline: 1rem;
+      display: grid;
+      place-content: center;
+      background: var(--accent);
+    }
+
+    button::before {
+      --size: .7rem;
+      content: '';
+      position: absolute;
+      border-width: var(--size) var(--size) var(--size) 0;
+      border-style: solid solid solid none;
+      border-color: transparent var(--accent);
+      /* top: calc(var(--size) * 1.5); */
+      left: calc(var(--size) * -1);
+      transform: translateY(50%);
+      transition: 250ms ease-in-out;
+    }
+  </style>
+</head>
+
+<body>
+
+
+  <header>
+    <input type="search">
+    <button>
+      asdf
+    </button>
+  </header>
+
+
+  <h1>Webtoons Populares</h1>
+  <ul id="webtoonsContainer"></ul>
+
+  <script>
+    const webtoonsContainer = document.getElementById('webtoonsContainer');
+
+    // URL de la API para obtener los webtoons populares
+    const apiUrl = 'https://korea-webtoon-api.herokuapp.com';
+
+    // Check if webtoons data is already stored in localStorage
+    const storedWebtoons = localStorage.getItem('webtoons');
+
+    if (storedWebtoons) {
+      // If webtoons data is available in localStorage, parse and render it
+      renderWebtoons(JSON.parse(storedWebtoons));
+    } else {
+      // If webtoons data is not available in localStorage, fetch it from the API
+      getWebtoons();
+    }
+
+    // Function to save webtoons data in localStorage
+    function saveWebtoons(webtoons) {
+      localStorage.setItem('webtoons', JSON.stringify(webtoons));
+    }
+
+
+
+    // Function to render webtoons in the DOM
+    function renderWebtoons(webtoons) {
+      webtoons.forEach(webtoon => {
+        // Render webtoon data 
+        const card = document.createElement('div');
+        card.classList.add('card');
+
+        const image = document.createElement('img');
+        image.src = webtoon.img;
+
+        const titleLink = document.createElement('a');
+        titleLink.href = webtoon.url;
+        titleLink.textContent = webtoon.title;
+
+        const author = document.createElement('p');
+        author.textContent = webtoon.author;
+
+        const updateDays = document.createElement('p');
+        updateDays.textContent = 'Update days: ' + webtoon.updateDays.join(', ');
+
+        const singularityList = document.createElement('p');
+        singularityList.textContent = 'Singularity List: ' + webtoon.additional.singularityList.join(', ');
+
+        card.appendChild(image);
+        card.appendChild(titleLink);
+        card.appendChild(author);
+        card.appendChild(updateDays);
+        card.appendChild(singularityList);
+
+        webtoonsContainer.appendChild(card);
+      });
+    }
+
+    async function getWebtoons() {
+      try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+        // Filtrar los webtoons que no son para adultos
+        const filteredWebtoons = data.webtoons.filter(webtoon => !webtoon.additional.adult);
+
+        // Save webtoons data in localStorage
+        saveWebtoons(filteredWebtoons);
+
+        // Render webtoons in the DOM
+        renderWebtoons(filteredWebtoons);
+      } catch (error) {
+        console.error('Error al obtener los webtoons:', error);
+      }
+    }
+
+  </script>
+</body>
+
+</html>
